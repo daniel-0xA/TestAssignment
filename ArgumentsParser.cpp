@@ -18,7 +18,6 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option)
 }
 
 char* ParseArguments(int argc, char* argv[]) {
-    // check for '-h' option
     if (cmdOptionExists(argv, argv + argc, "-h")) {
         std::cout << "with '-d' option provide the folder relative path (relative to where the executable is located) for the image files(e.g.: Imagees)";
         return 0;

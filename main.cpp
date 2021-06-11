@@ -1,14 +1,11 @@
-#include <algorithm>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <chrono>
+#include "FileHeader.h"
 
 namespace fs = std::filesystem;
-
-extern char* ParseArguments(int argc, char* argv[]);
-extern int ReadImageData(const std::filesystem::path &path, std::vector<uint16_t> &data);
 
 int main(int argc, char* argv[])
 {
@@ -37,25 +34,33 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto xDimension = 1856;
-    auto yDimension = 1024;
-    auto xyDimension = xDimension*yDimension;
-
-    std::vector<fs::path> filePath;
-    std::vector<std::vector<uint16_t>> pixels;
-
-    // iterate files in folder
+    std::vector<fs::path> filePaths;
     for (const auto& entry : fs::directory_iterator(absoluteImgPath)) {
         // skip possible folder entries
-        if(fs::is_directory(entry.path()))
+        if (fs::is_directory(entry.path()))
             continue;
 
-        filePath.push_back(entry.path());
-        std::cout << entry.path() << std::endl;
+        filePaths.push_back(entry.path());
+    }
 
+    struct FileHeader header;
+
+    // prerequisite: all the files should have same header
+    // read the header from the first file
+    if(ReadFileHeader(filePaths[0], header) == -1){
+        std::cout << "Error getting image header.";
+        return -1;
+    }
+    auto xDimension = header.xDimension;//1856;
+    auto yDimension = header.yDimension;//1024;
+    auto xyDimension = xDimension*yDimension;
+
+    std::vector<std::vector<uint16_t>> pixels;
+
+    for (const auto& path : filePaths) {
         std::vector<uint16_t> data;//data(xyDimension);
-        if( ReadImageData(entry.path(), data) == -1){
-            std::cout << "Error, could not open file:" << entry.path();
+        if(ReadImageData(path, data) == -1){
+            std::cout << "Error, could not open file:" << path;
             return -1;
         }
         pixels.push_back(data);
@@ -72,13 +77,14 @@ int main(int argc, char* argv[])
         }
     }
     auto t2 = high_resolution_clock::now();
-    /* Getting number of milliseconds as an integer. */
     auto ms_int = duration_cast<milliseconds>(t2 - t1);
-    std::cout << ms_int.count() << "ms\n";
+    std::cout << "Data collection and aggregating time:" << ms_int.count() << "ms\n";
 
-    outfile << "P2" << std::endl;
+    t1 = high_resolution_clock::now();
+
+    outfile << header.magicNumber << std::endl;
     outfile << xDimension << " " << yDimension << std::endl;
-    outfile << 4096 << std::endl;
+    outfile << header.bitDepth << std::endl;
 
     uint16_t indexWrite = 0;
     for (const auto& value : result)
@@ -88,15 +94,14 @@ int main(int argc, char* argv[])
         outfile << meanValue << " ";
         if (indexWrite % (xDimension) == 0)
         {
-            //std::cout << meanValue << std::endl;
             outfile << std::endl;
             indexWrite = 0;
         }
     }
 
+    t2 = high_resolution_clock::now();
+    ms_int = duration_cast<milliseconds>(t2 - t1);
+    std::cout << "Save to file time:" << ms_int.count() << "ms\n";
+
     return 0;
 }
-
-
-
-
