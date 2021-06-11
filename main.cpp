@@ -26,14 +26,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::string outfilePath("./MeanImage.pgm");
-    std::ofstream outfile(outfilePath, std::ios_base::out | std::ios_base::binary);
-    if (outfile.is_open() == false)
-    {
-        std::cout << "ERROR opening file:" << outfilePath << " errno:" << errno;
-        return -1;
-    }
-
     std::vector<fs::path> filePaths;
     for (const auto& entry : fs::directory_iterator(absoluteImgPath)) {
         // skip possible folder entries
@@ -58,7 +50,7 @@ int main(int argc, char* argv[])
     std::vector<std::vector<uint16_t>> pixels;
 
     for (const auto& path : filePaths) {
-        std::vector<uint16_t> data;//data(xyDimension);
+        std::vector<uint16_t> data;
         if(ReadImageData(path, data) == -1){
             std::cout << "Error, could not open file:" << path;
             return -1;
@@ -78,9 +70,17 @@ int main(int argc, char* argv[])
     }
     auto t2 = high_resolution_clock::now();
     auto ms_int = duration_cast<milliseconds>(t2 - t1);
-    std::cout << "Data collection and aggregating time:" << ms_int.count() << "ms\n";
+    std::cout << "Data collection time:" << ms_int.count() << "ms\n";
 
     t1 = high_resolution_clock::now();
+
+    std::string outfilePath = absoluteImgPath.string() + "./average.pgm";
+    std::ofstream outfile(outfilePath, std::ios_base::out | std::ios_base::binary);
+    if (outfile.is_open() == false)
+    {
+        std::cout << "ERROR opening file:" << outfilePath << " errno:" << errno;
+        return -1;
+    }
 
     outfile << header.magicNumber << std::endl;
     outfile << xDimension << " " << yDimension << std::endl;
@@ -90,8 +90,9 @@ int main(int argc, char* argv[])
     for (const auto& value : result)
     {
         indexWrite++;
-        auto meanValue = value/filesCount;
-        outfile << meanValue << " ";
+        // divide the summation value to the number of files to get the arithmetic average/mean
+        auto averageValue = value / filesCount;
+        outfile << averageValue << " ";
         if (indexWrite % (xDimension) == 0)
         {
             outfile << std::endl;
