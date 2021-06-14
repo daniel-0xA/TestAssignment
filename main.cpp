@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
     timer1 = std::chrono::high_resolution_clock::now();
 
-    std::string outfilePath = absoluteImgPath.string() + "./average.pgm";
+    std::string outfilePath = absoluteImgPath.string() + "/average.pgm";
     std::ofstream outfile(outfilePath, std::ios_base::out | std::ios_base::binary);
     if (!outfile.is_open())
     {
