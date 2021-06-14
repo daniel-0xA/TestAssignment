@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker run  --rm \
-    -v /home/dani/projects/testAssignment/Images:/usr/src/TestAssignment/Images \
-    test_assignment \
+docker run --rm \
+    -v Images:/usr/src/TestAssignment/Images \
+    danielspori/test_assignment \
     /usr/src/TestAssignment/TestAssignment -d Images
