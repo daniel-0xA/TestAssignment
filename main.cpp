@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <vector>
 #include "FileHeader.h"
 
 namespace fs = std::filesystem;

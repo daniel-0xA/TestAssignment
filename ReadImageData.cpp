@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <vector>
 #include "FileHeader.h"
 
 
@@ -28,10 +29,12 @@ int ReadImageData(const std::filesystem::path &path, std::vector<uint32_t> &data
         }
 
         size_t pos = 0;
-        std::string token;
-        while ((pos = line.find(' ')) != std::string::npos) {
-            token = line.substr(0, pos);
-            line.erase(0, pos + 1);
+        size_t prevPos = 0;
+        while ((pos = line.find(' ', prevPos)) != std::string::npos) {
+            // std::string token = line.substr(prevPos, pos - prevPos);
+            auto cString = line.c_str();
+            std::string token(cString + prevPos, cString + pos);
+            prevPos = pos + 1;
 
             uint32_t value = std::stoul(token);
             auto previousVal = data.at(indexPixel);
@@ -41,6 +44,7 @@ int ReadImageData(const std::filesystem::path &path, std::vector<uint32_t> &data
 
         lineIndex++;
     }
+    std::cout << lineIndex << std::endl;
     return 0;
 }
 
