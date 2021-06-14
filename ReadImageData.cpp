@@ -13,6 +13,7 @@ int ReadImageData(const std::filesystem::path &path, std::vector<uint32_t> &data
         std::cout << "Error, could not open file:" << path;
         return -1;
     }
+    std::cout << path << std::endl;
 
     std::string line;
     int lineIndex = 0;
@@ -44,7 +45,7 @@ int ReadImageData(const std::filesystem::path &path, std::vector<uint32_t> &data
 
         lineIndex++;
     }
-    std::cout << lineIndex << std::endl;
+
     return 0;
 }
 
